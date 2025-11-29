@@ -254,3 +254,8 @@ Deterministic KMeans (Iris & Wine)
 Fully Dockerized reproducible environment
 
 MIT License
+
+
+
+
+Minor formatting sync — test PR.

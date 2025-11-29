@@ -1,0 +1,26 @@
+{
+  "name": "prima-veritas-oss",
+  "version": "0.1.0",
+  "description": "Deterministic ingest → normalize → canonicalize → KMeans pipeline for reproducible analytics.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "fullproof:iris": "node runners/codice_fullproof.mjs iris",
+    "fullproof:wine": "node runners/codice_fullproof.mjs wine"
+  },
+  "keywords": [
+    "deterministic",
+    "reproducibility",
+    "analytics",
+    "kmeans",
+    "canonical",
+    "prima-veritas",
+    "codice"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOURNAME/prima-veritas-oss.git"
+  },
+  "author": "Bryan Ziehl",
+  "private": false
+}

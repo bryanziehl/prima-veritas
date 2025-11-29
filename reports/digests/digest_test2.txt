@@ -1,0 +1,2 @@
+digest: xyz999
+timestamp: 2025-11-25T19:05Z

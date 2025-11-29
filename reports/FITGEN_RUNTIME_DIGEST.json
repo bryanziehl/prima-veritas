@@ -1,0 +1,10 @@
+[
+  {
+    "file": "digest_test1.txt",
+    "content": "digest: abc123\r\ntimestamp: 2025-11-25T19:00Z"
+  },
+  {
+    "file": "digest_test2.txt",
+    "content": "digest: xyz999\r\ntimestamp: 2025-11-25T19:05Z"
+  }
+]

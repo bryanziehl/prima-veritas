@@ -1,0 +1,21 @@
+# Ignore local development artifacts
+node_modules
+.git
+.gitignore
+.DS_Store
+
+# DO NOT ignore reports — needed in the container for examples + FITGEN
+# Ignore screenshots only
+screenshots/
+
+# Ignore OS crud
+Thumbs.db
+desktop.ini
+
+# Ignore editor configs
+.vscode/
+.idea/
+
+# Optional: ignore scratch/data that should not inflate images
+*.log
+*.tmp

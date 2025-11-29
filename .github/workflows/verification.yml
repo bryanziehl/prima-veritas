@@ -1,0 +1,51 @@
+name: Prima Veritas Deterministic Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deterministic-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build -t prima-veritas-oss -f docker/Dockerfile .
+
+      - name: Create datasets directory
+        run: mkdir -p datasets
+
+      - name: Run Iris pipeline
+        run: docker run --rm -v ${{ github.workspace }}/datasets:/app/datasets prima-veritas-oss iris
+
+      - name: Run Wine pipeline
+        run: docker run --rm -v ${{ github.workspace }}/datasets:/app/datasets prima-veritas-oss wine
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run Hashcheck (Iris)
+        run: node tools/hashcheck.mjs iris
+
+      - name: Run Hashcheck (Wine)
+        run: node tools/hashcheck.mjs wine
+
+      - name: Rebuild FITGEN Digest
+        run: node tools/fitgen_runtime_digest_builder.mjs
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: deterministic-artifacts
+          path: |
+            datasets/**
+            reports/FITGEN_RUNTIME_DIGEST.json

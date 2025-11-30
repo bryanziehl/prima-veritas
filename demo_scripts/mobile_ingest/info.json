@@ -1,0 +1,8 @@
+{
+  "name": "Mobile Ingest Demo",
+  "version": "1.0.0",
+  "description": "Run Prima Veritas ingest from an iPhone via SSH.",
+  "maintainer": "Bryan Ziehl",
+  "tested_on": ["Prompt 3", "Blink Shell", "Termius"],
+  "supports": ["Windows + PowerShell", "Linux + bash", "macOS + bash"]
+}

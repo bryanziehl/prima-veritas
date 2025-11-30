@@ -1,4 +1,8 @@
-✅ Prima Veritas OSS — Deterministic Analytics Benchmark (v0.1.0)
+<p align="center">
+  <img src="./assets/logo/prima_veritas_banner-1280X640.png" alt="Prima Veritas Banner" width="100%" />
+</p>
+
+---
 
 # ⭐ Prima Veritas OSS — Deterministic Analytics Benchmark (v0.1.0)
 

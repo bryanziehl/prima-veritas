@@ -41,41 +41,46 @@ No randomness
 
 No environment-dependent behavior
 
-2. Directory Architecture
+## 2. Directory Architecture
 
+```
 prima_veritas_oss/
 │
-├── assets/                 # OSS-safe brand assets (SVG + PNG logos)
+├── assets/                      # OSS-safe brand assets (SVG + PNG logos)
 │   └── Color logo with background.svg
 │
-├── datasets/               # Raw CSV + normalized JSON + deterministic outputs
+├── datasets/                    # Raw CSV + normalized JSON + deterministic outputs
 │   ├── iris/
 │   └── wine/
 │
-├── docker/                 # Dockerfile + deterministic container runner
+├── demo_scripts/                # Optional demo workflows (e.g., mobile ingest)
+│   └── mobile_ingest/           # iPhone → SSH deterministic ingest demo
 │
-├── reports/                # FITGEN_RUNTIME_DIGEST + sample digest artifacts
+├── reports/                     # FITGEN_RUNTIME_DIGEST + sample digest artifacts
 │
-├── runners/                # codice_fullproof orchestrator + deterministic runners
+├── runners/                     # codice_fullproof orchestrator + deterministic runners
 │
-├── tests/                  # Full deterministic test suite (all tests passing)
+├── tests/                       # Full deterministic test suite (all tests passing)
 │
-├── tools/                  # FITGEN digest builder, hashcheck, misc utilities
+├── tools/                       # FITGEN digest builder, hashcheck, misc utilities
 │
-├── transforms/             # canonical_transform + normalization logic
+├── transforms/                  # canonical_transform + normalization logic
 │
-├── .dockerignore           # Docker build context filtering
-├── .editorconfig           # Formatting standards
+├── .dockerignore                # Docker build context filtering
+├── .editorconfig                # Formatting standards
 │
-├── ARCHITECTURE.md         # System architecture + determinism chain
-├── CHANGELOG.md            # Version history
-├── CONTRIBUTING.md         # Determinism guardrails for contributors
-├── LICENSE                 # MIT license (project-wide)
-├── package.json            # Node project definition
-├── QUICKSTART.md           # Minimal run instructions
-├── README.md               # Main project overview + commands
-├── RELEASE_TAGS.md         # Release tagging conventions
-└── SECURITY.md             # Security disclosure guidelines
+├── ARCHITECTURE.md              # System architecture + determinism chain
+├── CHANGELOG.md                 # Version history
+├── CONTRIBUTING.md              # Determinism guardrails for contributors
+├── LICENSE                      # MIT license (project-wide)
+├── package.json                 # Node project definition
+├── QUICKSTART.md                # Minimal run instructions
+├── README.md                    # Main project overview + commands
+├── RELEASE_TAGS.md              # Release tagging conventions
+├── SECURITY.md                  # Security disclosure guidelines
+│
+└── Dockerfile                   # Root-level Dockerfile used for deterministic runs
+
 
 
 This structure emphasizes:

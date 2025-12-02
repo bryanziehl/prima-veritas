@@ -1,79 +1,99 @@
-docker — Deterministic Execution Environment
+🐳 Deterministic Docker Environment
 
-This directory contains the fully reproducible Docker environment used to run the Prima Veritas OSS deterministic pipeline.
+This directory contains the runtime shell script and documentation for the Prima Veritas OSS deterministic Docker environment.
 
-The container guarantees:
+The container provides:
 
-Pinned Node version: Node 18 LTS (node:18.20.0-slim)
+Pinned Node 18.20.0
 
 Zero nondeterministic dependencies
 
-Clean, isolated filesystem identical across machines
+Clean, isolated filesystem
 
-Direct CLI dataset selection (iris, wine, future datasets)
+Deterministic ingest, normalization, and KMeans
 
-This eliminates machine variance and ensures all users produce bit-for-bit identical normalized JSON and KMeans outputs.
+Bit-for-bit identical outputs across machines
 
-Files
-Dockerfile
-
-Builds the deterministic runtime environment.
-
-It:
-
-Copies the full OSS repo into /app
-
-Installs dependencies deterministically (npm ci or npm install)
-
-Ensures runner scripts are executable
-
-Sets the container’s deterministic entrypoint
-
-Pins Node and all dependencies
-
+📁 Files
 run_fullproof.sh
 
-Executed inside the container on startup.
+Entrypoint executed inside the container.
 
 Responsibilities:
 
-Prints container + Node version
+Print container + Node version
 
-Detects dataset argument (defaults to iris)
+Parse dataset argument (iris, wine)
 
-Runs:
+Execute the deterministic pipeline:
 
 node runners/codice_fullproof.mjs <dataset>
 
 
-Exits cleanly once outputs are generated
+Write outputs to /app/datasets/<dataset>/
 
-Usage
-Build
-docker build -t prima-veritas-oss -f docker/Dockerfile .
+Exit cleanly
 
-Run (default dataset: iris)
-docker run --rm prima-veritas-oss
+🚀 Build the Docker Image
 
-Run wine
-docker run --rm prima-veritas-oss wine
+(Run from the repository root)
 
-Run with mounted datasets (recommended for development)
-docker run --rm \
-  -v "$(pwd)/datasets:/app/datasets" \
+docker build -t prima-veritas-oss .
+
+
+This produces the sealed deterministic environment.
+
+▶️ Run the Deterministic Pipeline
+
+The container requires a dataset bind-mount to write outputs back into the repo.
+
+Mac / Linux
+docker run -it --rm \
+  -v $(pwd)/datasets:/app/datasets \
   prima-veritas-oss iris
 
+docker run -it --rm \
+  -v $(pwd)/datasets:/app/datasets \
+  prima-veritas-oss wine
 
-Windows PowerShell equivalent:
-
-docker run --rm `
+Windows PowerShell
+docker run -it --rm `
   -v ${PWD}\datasets:/app/datasets `
   prima-veritas-oss iris
 
-Notes
+docker run -it --rm `
+  -v ${PWD}\datasets:/app/datasets `
+  prima-veritas-oss wine
 
-This container is the recommended execution path for all reproducibility testing.
+📦 Output Locations
 
-Native Node execution is possible but not officially supported and may introduce nondeterministic drift.
+Each run generates:
 
-The pinned Node version + isolated filesystem form the backbone of the deterministic guarantee.
+datasets/<dataset>/<dataset>_normalized.json
+datasets/<dataset>/<dataset>_kmeans.json
+
+
+And updates:
+
+reports/FITGEN_RUNTIME_DIGEST.json
+
+✔ Determinism Guarantee
+
+Running:
+
+docker run --rm prima-veritas-oss iris
+docker run --rm prima-veritas-oss wine
+
+
+will always produce outputs matching the official Prima Veritas OSS golden hashes.
+
+To verify:
+
+node tools/hashcheck.mjs iris
+node tools/hashcheck.mjs wine
+
+
+A correct environment reports:
+
+normalized → ✔ MATCH
+kmeans     → ✔ MATCH

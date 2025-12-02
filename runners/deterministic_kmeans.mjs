@@ -1,36 +1,25 @@
 // ---------------------------------------------------------------------------
-// Prima Veritas OSS — deterministic_kmeans.mjs
-// Fully deterministic K-Means (canonical v0.1.0 reference implementation).
+// Prima Veritas OSS — deterministic_kmeans.mjs (v0.1.0)
+// Fully deterministic K-Means — Prima Veritas OSS canonical reference.
 // MIT License.
 // ---------------------------------------------------------------------------
 //
 // Purpose:
-//   Provide a zero-entropy K-Means algorithm suitable for reproducibility
-//   research, audits, verification pipelines, and cross-machine consistency.
-//   All centroid initialization, assignment, update, and ordering rules are
-//   fixed, stateless, and environment-independent.
+//   Provide a zero-entropy K-Means algorithm suitable for reproducibility,
+//   audits, verification pipelines, and cross-machine consistency.
 //
 // Determinism Guarantees:
 //   • Sorted-feature deterministic centroid initialization
 //   • Fixed iteration cap + reproducible convergence
-//   • Numeric feature extraction in stable sorted order
+//   • Canonical numeric extraction (stable sorted order)
 //   • Deterministic ROUND() applied to all floating-point ops
-//   • Canonical centroid ordering to avoid index drift
-//   • No randomness, timestamps, locale differences, or platform variance
+//   • Canonical centroid ordering
+//   • Canonical JSON serialization
 //
-// Contributor Guidelines:
-//   • Maintain statelessness and purity throughout the algorithm.
-//   • Do NOT introduce random seeds, tie-break heuristics, or adaptive k.
-//   • Any change must preserve bit-for-bit identical output across:
-//         – CPU architectures
-//         – operating systems
-//         – native Node and Docker
-//
-// This file serves as the canonical K-Means implementation for Prima Veritas
-// OSS v0.1.0 and must remain permanently reproducible.
 // ---------------------------------------------------------------------------
 
-
+import path from "path";
+import { resolveDatasetPaths } from "./path_resolver.mjs";
 
 const ROUND = x => Number(x.toFixed(12));
 
@@ -49,9 +38,7 @@ export function deterministicKMeans(matrix, k = 3) {
     throw new Error(`KMeans: k=${k} > dataset size=${n}`);
   }
 
-  // ------------------------------------------------------------
-  // Deterministic initialization → sort by first feature
-  // ------------------------------------------------------------
+  // Deterministic initialization (sorted by first feature)
   const sortedIndices = Array.from({ length: n }, (_, i) => i)
     .sort((a, b) => matrix[a][0] - matrix[b][0]);
 
@@ -62,18 +49,12 @@ export function deterministicKMeans(matrix, k = 3) {
   const maxIter = 50;
   let assignments = new Array(n).fill(0);
 
-  // ------------------------------------------------------------
-  // Iterative KMeans
-  // ------------------------------------------------------------
   for (let iter = 0; iter < maxIter; iter++) {
     let changed = false;
 
-    // -----------------------
-    // Assignment step
-    // -----------------------
+    // Assignment
     for (let i = 0; i < n; i++) {
       const p = matrix[i];
-
       let bestC = 0;
       let bestDist = Infinity;
 
@@ -97,9 +78,7 @@ export function deterministicKMeans(matrix, k = 3) {
       }
     }
 
-    // -----------------------
-    // Update centroids
-    // -----------------------
+    // Update
     const newCentroids = Array.from({ length: k }, () =>
       Array(dim).fill(0)
     );
@@ -123,9 +102,7 @@ export function deterministicKMeans(matrix, k = 3) {
       }
     }
 
-    // -----------------------
-    // Convergence check
-    // -----------------------
+    // Convergence
     let drift = 0;
     for (let c = 0; c < k; c++) {
       for (let d = 0; d < dim; d++) {
@@ -137,9 +114,7 @@ export function deterministicKMeans(matrix, k = 3) {
     if (!changed || drift < 1e-12) break;
   }
 
-  // ------------------------------------------------------------
   // Canonical centroid ordering
-  // ------------------------------------------------------------
   const centroidTuples = centroids.map((coords, idx) => ({ index: idx, coords }));
 
   centroidTuples.sort((a, b) => {
@@ -164,40 +139,29 @@ export function deterministicKMeans(matrix, k = 3) {
   };
 }
 
-// ------------------------------------------------------------
-// Container-facing wrapper (ABSOLUTE PATHS)
-// ------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// HYBRID PATH RUNNER — uses resolveDatasetPaths()
+// ---------------------------------------------------------------------------
 export async function runKMeansFile(dataset, k = 3) {
   const fs = (await import("fs")).default;
-  const path = (await import("path")).default;
 
-  const normPath = path.join(
-    "/app",
-    "datasets",
-    dataset,
-    `${dataset}_normalized.json`
-  );
-
-  const outPath = path.join(
-    "/app",
-    "datasets",
-    dataset,
-    `${dataset}_kmeans.json`
-  );
+  const paths = resolveDatasetPaths(dataset);
+  const normPath = paths.normalized;
+  const outPath  = paths.kmeans;
 
   if (!fs.existsSync(normPath)) {
-    throw new Error(`KMeans: missing normalized file → ${normPath}`);
+    throw new Error(`KMeans: missing normalized file at: ${normPath}`);
   }
 
   const rows = JSON.parse(fs.readFileSync(normPath, "utf8"));
-
-  // Extract numeric matrix deterministically
   const matrix = rows.map(r =>
     Object.values(r).filter(v => typeof v === "number")
   );
 
   const result = deterministicKMeans(matrix, k);
 
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(result, null, 2), "utf8");
+
   console.log(`✔ KMeans output → ${outPath}`);
 }

@@ -1,58 +1,41 @@
 // ---------------------------------------------------------------------------
-// Prima Veritas OSS — deterministic_normalize.mjs
+// Prima Veritas OSS — deterministic_normalize.mjs (v0.1.0)
 // Dataset-agnostic canonical normalization engine.
 // MIT License.
 // ---------------------------------------------------------------------------
 //
 // Purpose:
-//   Convert arbitrary CSV text into a deterministic JSON array using
-//   strict, reproducible rules. This serves as the foundation for
-//   downstream analytics (e.g., deterministic KMeans) and ensures that
-//   researchers, auditors, and automated systems can reproduce identical
-//   normalization output on any machine.
+//   Convert arbitrary CSV text into a deterministic JSON array using strict,
+//   reproducible rules. The output forms the foundation for deterministic
+//   analytics (e.g., KMeans) and must be stable across all machines.
 //
 // Determinism Guarantees:
-//   • Field names are parsed then sorted lexicographically.
-//   • canonicalTransform() enforces stable typing + key ordering.
-//   • Output row order = original row order (minus blank lines).
-//   • No randomness, timestamps, locale drift, or machine-specific ops.
-//   • JSON stringification is fully stable (indentation + ordering).
+//   • Lexicographic field ordering
+//   • canonicalTransform() → stable typing + stable key order
+//   • Output row order = original CSV row order (minus blanks)
+//   • No randomness, timestamps, locale drift, or platform dependence
+//   • Canonical JSON serialization via writeDeterministicJSON()
 //
-// Notes for Contributors:
-//   Maintain purity. No async I/O, no environment-dependent behavior,
-//   no auto-detection heuristics, and no transformations that depend
-//   on external state. All changes must preserve bit-for-bit
-//   reproducibility when fed identical inputs.
-//
-//   If additional transforms are added in the future, they must remain:
-//     - deterministic,
-//     - stateless,
-//     - transparent,
-//     - reversible or well-documented.
-//
-// --------------------------------------------------------------------------
+// Contributor Rules:
+//   • No async I/O, dynamic heuristics, autocasting, or environment state.
+//   • All transforms must remain deterministic, stateless, transparent.
+//   • Any additions must preserve bit-for-bit reproducibility.
+// ---------------------------------------------------------------------------
 
 import fs from "fs";
 import path from "path";
 import { canonicalTransform } from "../transforms/canonical_transform.mjs";
 
-/**
- * Deterministic normalization rules:
- *  - Sort fields lexicographically
- *  - Apply canonicalTransform() to each row
- *  - Output JSON array with stable ordering
- *  - No timestamps, randomness, or nondeterministic ops
- */
-
+// ------------------------------------------------------------
+// Deterministic CSV → canonical JSON normalization
+// ------------------------------------------------------------
 export function deterministicNormalize(csvText) {
   const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
   if (lines.length === 0) return [];
 
-  // Deterministic header parsing
-  const header = lines[0]
-    .split(",")
-    .map(h => h.trim())
-    .sort();                       // <— canonical field order
+  // Canonical header ordering (sorted lexicographically)
+  const rawHeader = lines[0].split(",").map(h => h.trim());
+  const header = [...rawHeader].sort();
 
   const normalized = [];
 
@@ -61,18 +44,18 @@ export function deterministicNormalize(csvText) {
 
     if (parts.length === 0) continue;
 
-    // Build row (unordered object)
+    // Build row object using raw header order
     const rowObj = {};
-    const rawKeys = lines[0].split(",").map(h => h.trim());
-
-    for (let j = 0; j < rawKeys.length; j++) {
-      rowObj[rawKeys[j]] = parts[j] !== undefined ? parts[j].trim() : "";
+    for (let j = 0; j < rawHeader.length; j++) {
+      const key = rawHeader[j];
+      const val = parts[j] !== undefined ? parts[j].trim() : "";
+      rowObj[key] = val;
     }
 
-    // Canonical transform enforces ordering + types
+    // Apply deterministic transform (typing + key normalization)
     const transformed = canonicalTransform(rowObj);
 
-    // Reorder deterministically by sorted header
+    // Canonicalize ordering using sorted header
     const ordered = {};
     for (const key of header) {
       ordered[key] = transformed[key] ?? null;
@@ -84,12 +67,11 @@ export function deterministicNormalize(csvText) {
   return normalized;
 }
 
-/**
- * Deterministic JSON writer for normalized data.
- * Ensures stable ordering & no whitespace drift.
- */
+// ------------------------------------------------------------
+// Deterministic JSON writer
+// ------------------------------------------------------------
 export function writeDeterministicJSON(outPath, data) {
   const json = JSON.stringify(data, null, 2);
-
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, json, "utf8");
 }

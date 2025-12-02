@@ -17,6 +17,8 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH).
 - FITGEN digest builder (tools/).
 - Complete MIT License.
 
+---
+
 
 ### Philosophy
 - Use freely, but respect provenance and credit.
@@ -29,3 +31,10 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH).
 - Future deterministic methods and canonical analytics.
 - Expanded verification tools and provenance utilities.
 - Continued updates aligned with the evolution of the broader verification architecture.
+
+---
+
+### Added
+- Mobile Ingest Demo (`demo_scripts/mobile_ingest/`): run Prima Veritas ingest remotely via iPhone SSH.
+- PowerShell requirement note for Windows-based remote hashing.
+- Clarified remote-shell behavior and updated documentation for accuracy.
